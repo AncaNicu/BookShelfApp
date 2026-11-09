@@ -23,6 +23,7 @@ public class Author
 
 	public void setAuthorId(int authorId) 
 	{
+		validateAuthorId(authorId);
 		this.authorId = authorId;
 	}
 
@@ -76,4 +77,12 @@ public class Author
 		}
 	}
 	
+	private static void validateAuthorId(int authorId)
+	{
+		if(authorId < 0)
+		{
+			throw new IllegalArgumentException
+			("The id must be valid.");
+		}
+	}
 }

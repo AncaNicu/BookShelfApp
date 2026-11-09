@@ -18,6 +18,7 @@ public class Genre
 
 	public void setGenreId(int genreId) 
 	{
+		validateGenreId(genreId);
 		this.genreId = genreId;
 	}
 
@@ -38,6 +39,15 @@ public class Genre
 		{
 			throw new IllegalArgumentException
 			("The name of the genre is required.");
+		}
+	}
+	
+	private static void validateGenreId(int genreId)
+	{
+		if(genreId < 0)
+		{
+			throw new IllegalArgumentException
+			("The id must be valid.");
 		}
 	}
 }

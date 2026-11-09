@@ -48,6 +48,7 @@ public class Book
 
 	public void setBookId(int bookId) 
 	{
+		validateBookId(bookId);
 		this.bookId = bookId;
 	}
 
@@ -189,6 +190,15 @@ public class Book
 		{
 			throw new IllegalArgumentException
 			("The rating should be null or between 1 and 5.");
+		}
+	}
+	
+	private static void validateBookId(int bookId)
+	{
+		if(bookId < 0)
+		{
+			throw new IllegalArgumentException
+			("The id must be valid.");
 		}
 	}
 }
