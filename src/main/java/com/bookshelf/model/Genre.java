@@ -1,4 +1,5 @@
 package com.bookshelf.model;
+import java.util.Objects;
 
 public class Genre 
 {
@@ -31,6 +32,20 @@ public class Genre
 	{
 		validateName(name);	
 		this.name = name;
+	}
+	
+	public boolean checkEquality(Genre genre)
+	{
+		if(genre == null)
+		{
+			return false;
+		}
+		
+		if(Objects.equals(this.name, genre.name))
+		{
+			return true;
+		}
+		return false;
 	}
 	
 	private static void validateName(String name) 

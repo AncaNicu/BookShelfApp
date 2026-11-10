@@ -1,4 +1,5 @@
 package com.bookshelf.model;
+import java.util.Objects;
 
 public class Author 
 {
@@ -11,6 +12,7 @@ public class Author
 	{
 		validateFirstName(firstName);
 		validateLastName(lastName);
+		validateNationality(nationality);
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.nationality = nationality;
@@ -56,7 +58,24 @@ public class Author
 
 	public void setNationality(String nationality) 
 	{
+		validateNationality(nationality);
 		this.nationality = nationality;
+	}
+	
+	public boolean checkEquality(Author author)
+	{
+		if(author == null)
+		{
+			return false;
+		}
+		
+		if(Objects.equals(this.firstName, author.firstName) &&
+				Objects.equals(this.lastName, author.lastName) &&
+				Objects.equals(this.nationality, author.nationality))
+		{
+			return true;
+		}
+		return false;
 	}
 	
 	private static void validateFirstName(String firstName)
@@ -84,5 +103,14 @@ public class Author
 			throw new IllegalArgumentException
 			("The id must be valid.");
 		}
+	}
+	
+	private static void validateNationality(String nationality)
+	{
+	    if(nationality == null || nationality.isBlank())
+	    {
+	        throw new IllegalArgumentException
+	        ("The author's nationality is required.");
+	    }
 	}
 }

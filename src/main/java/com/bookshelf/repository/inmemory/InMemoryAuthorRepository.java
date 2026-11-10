@@ -35,6 +35,19 @@ public class InMemoryAuthorRepository implements IAuthorRepository
 		
 		return author;
 	}
+	
+	/*private boolean authorAlreadyExists(Author author)
+	{
+		for(Author a : authors.values())
+		{
+			if(a.checkEquality(author))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}*/
 
 	@Override
 	public Optional<Author> findAuthorById(int authorId) 

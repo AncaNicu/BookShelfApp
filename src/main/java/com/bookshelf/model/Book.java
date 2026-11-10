@@ -1,6 +1,7 @@
 package com.bookshelf.model;
 import com.bookshelf.enums.ReadingStatus;
 import java.time.Year;
+import java.util.Objects;
 
 public class Book 
 {
@@ -127,6 +128,26 @@ public class Book
 	{
 		validateGenreId(genreId);
 		this.genreId = genreId;
+	}
+	
+	public boolean checkEquality(Book book)
+	{
+		if(book == null)
+		{
+			return false;
+		}
+		
+		if(Objects.equals(this.title, book.title) &&
+				this.publicationYear == book.publicationYear &&
+				this.totalPages == book.totalPages &&
+				this.status == book.status &&
+				this.authorId == book.authorId &&
+				this.genreId == book.genreId &&
+				Objects.equals(this.rating, book.rating))
+		{
+			return true;
+		}
+		return false;
 	}
 	
 	private static void validateTitle(String title)
