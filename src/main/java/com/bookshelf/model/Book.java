@@ -137,13 +137,11 @@ public class Book
 			return false;
 		}
 		
-		if(Objects.equals(this.title, book.title) &&
+		if(Objects.equals(this.title.trim().toLowerCase(), book.title.trim().toLowerCase()) &&
 				this.publicationYear == book.publicationYear &&
 				this.totalPages == book.totalPages &&
-				this.status == book.status &&
 				this.authorId == book.authorId &&
-				this.genreId == book.genreId &&
-				Objects.equals(this.rating, book.rating))
+				this.genreId == book.genreId)
 		{
 			return true;
 		}

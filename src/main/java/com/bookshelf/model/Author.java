@@ -69,9 +69,9 @@ public class Author
 			return false;
 		}
 		
-		if(Objects.equals(this.firstName, author.firstName) &&
-				Objects.equals(this.lastName, author.lastName) &&
-				Objects.equals(this.nationality, author.nationality))
+		if(Objects.equals(this.firstName.trim().toLowerCase(), author.firstName.trim().toLowerCase()) &&
+				Objects.equals(this.lastName.trim().toLowerCase(), author.lastName.trim().toLowerCase()) &&
+				Objects.equals(this.nationality.trim().toLowerCase(), author.nationality.trim().toLowerCase()))
 		{
 			return true;
 		}

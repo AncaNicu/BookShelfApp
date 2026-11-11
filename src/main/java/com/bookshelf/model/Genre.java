@@ -41,7 +41,8 @@ public class Genre
 			return false;
 		}
 		
-		if(Objects.equals(this.name, genre.name))
+		if(Objects.equals(this.name.trim().toLowerCase(), 
+				genre.name.trim().toLowerCase()))
 		{
 			return true;
 		}

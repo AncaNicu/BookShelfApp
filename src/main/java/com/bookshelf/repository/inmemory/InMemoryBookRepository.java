@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.bookshelf.model.Author;
 import com.bookshelf.model.Book;
 import com.bookshelf.repository.interfaces.IBookRepository;
 
@@ -23,12 +24,6 @@ public class InMemoryBookRepository implements IBookRepository
 	@Override
 	public Book addBook(Book book) 
 	{
-		if(book == null)
-		{
-			throw new IllegalArgumentException
-			("The book to be added cannot be null.");			
-		}
-		
 		book.setBookId(nextId);
 		this.books.put(nextId, book);
 		this.nextId++;
@@ -51,12 +46,6 @@ public class InMemoryBookRepository implements IBookRepository
 	@Override
 	public boolean updateBook(int bookId, Book updatedBook) 
 	{
-		if(updatedBook == null)
-		{
-			throw new IllegalArgumentException
-			("The book to be updated cannot be null.");			
-		}
-		
 		if(!this.books.containsKey(bookId))
 		{
 			return false;
@@ -72,6 +61,34 @@ public class InMemoryBookRepository implements IBookRepository
 	public boolean deleteBook(int bookId) 
 	{
 		return this.books.remove(bookId) != null;
+	}
+
+	@Override
+	public boolean existsDuplicate(Book book) 
+	{
+		for(Book b : books.values())
+		{
+			if(b.checkEquality(book))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	@Override
+	public boolean existsDuplicate(Book book, int excludedBookId) 
+	{
+		for(Book b : books.values())
+		{
+			if(b.checkEquality(book) && b.getBookId() != excludedBookId)
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 }

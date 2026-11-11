@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.bookshelf.model.Book;
 import com.bookshelf.model.Genre;
 import com.bookshelf.repository.interfaces.IGenreRepository;
 
@@ -22,20 +23,14 @@ public class InMemoryGenreRepository implements IGenreRepository
 	
 	@Override
 	public Genre addGenre(Genre genre) 
-	{
-		if(genre == null)
-		{
-			throw new IllegalArgumentException
-			("The genre to be added cannot be null.");
-		}
-		
+	{	
 		genre.setGenreId(nextId);
 		this.genres.put(this.nextId, genre);
 		this.nextId++;
 		
 		return genre;
 	}
-
+	
 	@Override
 	public Optional<Genre> findGenreById(int genreId) 
 	{
@@ -50,13 +45,7 @@ public class InMemoryGenreRepository implements IGenreRepository
 
 	@Override
 	public boolean updateGenre(int genreId, Genre updatedGenre) 
-	{
-		if(updatedGenre == null)
-		{
-			throw new IllegalArgumentException
-			("The genre to be updated cannot be null.");
-		}
-		
+	{	
 		if(!this.genres.containsKey(genreId))
 		{
 			return false;
@@ -72,6 +61,34 @@ public class InMemoryGenreRepository implements IGenreRepository
 	public boolean deleteGenre(int genreId) 
 	{
 		return this.genres.remove(genreId) != null;
+	}
+
+	@Override
+	public boolean existsDuplicate(Genre genre) 
+	{
+		for(Genre g : genres.values())
+		{
+			if(g.checkEquality(genre))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	@Override
+	public boolean existsDuplicate(Genre genre, int excludedGenreId) 
+	{
+		for(Genre g : genres.values())
+		{
+			if(g.checkEquality(genre) && g.getGenreId() != excludedGenreId)
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 }

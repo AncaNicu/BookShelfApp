@@ -22,32 +22,13 @@ public class InMemoryAuthorRepository implements IAuthorRepository
 
 	@Override
 	public Author addAuthor(Author author) 
-	{
-		if(author == null)
-		{
-			throw new IllegalArgumentException
-			("The author to be added cannot be null.");
-		}
-		
+	{	
 		author.setAuthorId(this.nextId);
 		this.authors.put(this.nextId, author);
 		this.nextId++;
 		
 		return author;
 	}
-	
-	/*private boolean authorAlreadyExists(Author author)
-	{
-		for(Author a : authors.values())
-		{
-			if(a.checkEquality(author))
-			{
-				return true;
-			}
-		}
-		
-		return false;
-	}*/
 
 	@Override
 	public Optional<Author> findAuthorById(int authorId) 
@@ -63,13 +44,7 @@ public class InMemoryAuthorRepository implements IAuthorRepository
 
 	@Override
 	public boolean updateAuthor(int authorId, Author updatedAuthor) 
-	{
-		if(updatedAuthor == null)
-		{
-			throw new IllegalArgumentException
-			("The author to be updated cannot be null.");
-		}
-		
+	{	
 		if(!this.authors.containsKey(authorId))
 		{
 			return false;
@@ -85,6 +60,38 @@ public class InMemoryAuthorRepository implements IAuthorRepository
 	public boolean deleteAuthor(int authorId) 
 	{		
 		return this.authors.remove(authorId) != null;
+	}
+
+	//checks if an author already exists
+	//for add operation
+	@Override
+	public boolean existsDuplicate(Author author) 
+	{
+		for(Author a : authors.values())
+		{
+			if(a.checkEquality(author))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	//checks if an author already exists
+	//for update operation
+	@Override
+	public boolean existsDuplicate(Author author, int excludedAuthorId) 
+	{
+		for(Author a : authors.values())
+		{
+			if(a.checkEquality(author) && a.getAuthorId()!= excludedAuthorId)
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 }

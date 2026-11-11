@@ -8,6 +8,8 @@ import com.bookshelf.model.Genre;
 public interface IGenreRepository 
 {
 	Genre addGenre(Genre genre);
+	boolean existsDuplicate(Genre genre);
+	boolean existsDuplicate(Genre genre, int excludedGenreId);
 	Optional<Genre> findGenreById(int genreId);
 	List<Genre> getAllGenres();
 	boolean updateGenre(int genreId, Genre updatedGenre);
