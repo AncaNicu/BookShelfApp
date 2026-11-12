@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.bookshelf.model.Author;
 import com.bookshelf.model.Book;
 import com.bookshelf.repository.interfaces.IBookRepository;
 

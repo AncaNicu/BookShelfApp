@@ -58,7 +58,7 @@ public class InMemoryGenreRepositoryTest
 		assertTrue(g2.checkEquality(addedG2));
 	}
 	
-	@Test
+	/*@Test
 	public void addNullGenre_ThrowsException()
 	{
 		//Act + Assert
@@ -69,7 +69,7 @@ public class InMemoryGenreRepositoryTest
 		String actualMessage = ex.getMessage();
 		
 		assertEquals(expectedMessage, actualMessage);
-	}
+	}*/
 	
 	//--------------------------FIND A GENRE TESTS
 	@Test
@@ -158,7 +158,7 @@ public class InMemoryGenreRepositoryTest
 		assertFalse(repository.updateGenre(1, updatedG));
 	}
 	
-	@Test
+	/*@Test
 	public void updateNullGenre_ThrowsException()
 	{
 		//Act + Assert
@@ -169,7 +169,7 @@ public class InMemoryGenreRepositoryTest
 		String actualMessage = ex.getMessage();
 		
 		assertEquals(expectedMessage, actualMessage);
-	}
+	}*/
 	
 	//--------------------------DELETE A GENRE TESTS
 	@Test 

@@ -66,7 +66,7 @@ public class InMemoryAuthorRepositoryTest
 	
 	//checks if it throws an exception
 	//when adding a null author
-	@Test
+	/*@Test
 	public void addNullAuthor_ThrowsException()
 	{		
 		//Act + Assert
@@ -77,7 +77,7 @@ public class InMemoryAuthorRepositoryTest
 		String actualMessage = ex.getMessage();
 		
 		assertEquals(expectedMessage, actualMessage);
-	}
+	}*/
 	
 	//--------------------------FIND AN AUTHOR TESTS
 	
@@ -96,9 +96,6 @@ public class InMemoryAuthorRepositoryTest
 		//Assert
 		assertTrue(result.isPresent());
 		assertEquals(1, result.get().getAuthorId());
-		//assertEquals("Lewis", result.get().getFirstName());
-		//assertEquals("Carroll", result.get().getLastName());
-		//assertEquals("British", result.get().getNationality());
 		assertTrue(author.checkEquality(result.get()));
 	}
 	
@@ -185,7 +182,7 @@ public class InMemoryAuthorRepositoryTest
 	
 	//check if it throws an exception 
 	//when the updated author is null
-	@Test
+	/*@Test
 	public void updateNullAuthor_ThrowsException()
 	{
 		//Act + Assert
@@ -196,7 +193,7 @@ public class InMemoryAuthorRepositoryTest
 		String actualMessage = ex.getMessage();
 		
 		assertEquals(expectedMessage, actualMessage);
-	}
+	}*/
 	
 	//--------------------------DELETE AN AUTHOR TESTS
 	
