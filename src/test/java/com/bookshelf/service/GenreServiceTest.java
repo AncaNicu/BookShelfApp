@@ -20,8 +20,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.bookshelf.enums.ReadingStatus;
 import com.bookshelf.exception.DuplicateGenreException;
+import com.bookshelf.model.Book;
 import com.bookshelf.model.Genre;
+import com.bookshelf.repository.interfaces.IBookRepository;
 import com.bookshelf.repository.interfaces.IGenreRepository;
 import com.bookshelf.service.classes.GenreService;
 
@@ -31,12 +34,15 @@ public class GenreServiceTest
 	@Mock
 	private IGenreRepository repoMock;
 	
+	@Mock
+	private IBookRepository bookRepoMock;
+	
 	private GenreService service;
 	
 	@BeforeEach
 	void setUp()
 	{
-		service = new GenreService(repoMock);
+		service = new GenreService(repoMock, bookRepoMock);
 	}
 	
 	//------------------ADD A GENRE TESTS
@@ -269,6 +275,13 @@ public class GenreServiceTest
 		int gId = 1;
 				
 		when(repoMock.deleteGenre(gId)).thenReturn(true);
+		
+		Book b1 = new Book("The Wonderful Wizard of Oz", 1900, 200,
+				ReadingStatus.COMPLETED, 1, gId, 3);
+		Book b2 = new Book("Murder on the Orient Express", 1934, 310,
+				ReadingStatus.COMPLETED, 2, 2, 4);
+		
+		when(bookRepoMock.getAllBooks()).thenReturn(List.of(b1, b2));
 		
 		//Act
 		boolean result = service.deleteGenre(gId);

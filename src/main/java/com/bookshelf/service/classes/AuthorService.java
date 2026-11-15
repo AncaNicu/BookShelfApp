@@ -6,22 +6,30 @@ import java.util.Optional;
 
 import com.bookshelf.exception.DuplicateAuthorException;
 import com.bookshelf.model.Author;
+import com.bookshelf.model.Book;
 import com.bookshelf.repository.interfaces.IAuthorRepository;
+import com.bookshelf.repository.interfaces.IBookRepository;
 import com.bookshelf.service.interfaces.IAuthorService;
 
 public class AuthorService implements IAuthorService 
 {
 	//final prevents the field to be reassigned after construction
 	private final IAuthorRepository authorRepository;
+	private final IBookRepository bookRepository;
 	
 	//constructor dependency injection
-	public AuthorService(IAuthorRepository authorRepository)
+	public AuthorService(IAuthorRepository authorRepository,
+			IBookRepository bookRepository)
 	{
 		//requireNonNull prevents the service to be created with
 		//a null dependency
 		this.authorRepository = Objects.requireNonNull(
 				authorRepository,
 				"Author repository cannot be null.");
+		
+		this.bookRepository = Objects.requireNonNull(
+				bookRepository,
+				"Book repository cannot be null.");
 	}
 
 	@Override
@@ -75,7 +83,23 @@ public class AuthorService implements IAuthorService
 	@Override
 	public boolean deleteAuthor(int authorId) 
 	{
-		return authorRepository.deleteAuthor(authorId);
+		List<Book> books = bookRepository.getAllBooks();
+		boolean deleted = authorRepository.deleteAuthor(authorId);
+		
+		if(deleted)
+		{
+			for(Book b : books)
+			{
+				if(b.getAuthorId() == authorId)
+				{
+					int bookId = b.getBookId();
+					
+					bookRepository.deleteBook(bookId);
+				}
+			}
+		}
+		
+		return deleted;
 	}
 
 }

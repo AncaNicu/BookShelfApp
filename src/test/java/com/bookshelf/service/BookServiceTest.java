@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.bookshelf.enums.ReadingStatus;
-import com.bookshelf.exception.DuplicateAuthorException;
 import com.bookshelf.exception.DuplicateBookException;
 import com.bookshelf.model.Author;
 import com.bookshelf.model.Book;
@@ -29,7 +28,6 @@ import com.bookshelf.model.Genre;
 import com.bookshelf.repository.interfaces.IAuthorRepository;
 import com.bookshelf.repository.interfaces.IBookRepository;
 import com.bookshelf.repository.interfaces.IGenreRepository;
-import com.bookshelf.service.classes.AuthorService;
 import com.bookshelf.service.classes.BookService;
 
 @ExtendWith(MockitoExtension.class)

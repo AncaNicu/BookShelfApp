@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.bookshelf.exception.DuplicateAuthorException;
 import com.bookshelf.model.Author;
 import com.bookshelf.repository.interfaces.IAuthorRepository;
+import com.bookshelf.repository.interfaces.IBookRepository;
 import com.bookshelf.service.classes.AuthorService;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,12 +32,15 @@ public class AuthorServiceTest
 	@Mock
 	private IAuthorRepository repoMock;
 	
+	@Mock
+	private IBookRepository bookRepoMock;
+	
 	private AuthorService service;
 	
 	@BeforeEach
 	void setUp()
 	{
-		service = new AuthorService(repoMock);
+		service = new AuthorService(repoMock, bookRepoMock);
 	}
 	
 	//------------------ADD AN AUTHOR TESTS

@@ -5,19 +5,27 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.bookshelf.exception.DuplicateGenreException;
+import com.bookshelf.model.Book;
 import com.bookshelf.model.Genre;
+import com.bookshelf.repository.interfaces.IBookRepository;
 import com.bookshelf.repository.interfaces.IGenreRepository;
 import com.bookshelf.service.interfaces.IGenreService;
 
 public class GenreService implements IGenreService 
 {
 	private final IGenreRepository genreRepository;
+	private final IBookRepository bookRepository;
 	
-	public GenreService(IGenreRepository genreRepository)
+	public GenreService(IGenreRepository genreRepository,
+			IBookRepository bookRepository)
 	{
 		this.genreRepository = Objects.requireNonNull(
 				genreRepository,
 				"Genre repository cannot be null.");
+		
+		this.bookRepository = Objects.requireNonNull(
+				bookRepository,
+				"Book repository cannot be null.");
 	}
 
 	@Override
@@ -71,7 +79,23 @@ public class GenreService implements IGenreService
 	@Override
 	public boolean deleteGenre(int genreId) 
 	{		
-		return genreRepository.deleteGenre(genreId);
+		List<Book> books = bookRepository.getAllBooks();
+		boolean deleted = genreRepository.deleteGenre(genreId);
+		
+		if(deleted)
+		{
+			for(Book b : books)
+			{
+				if(b.getGenreId() == genreId)
+				{
+					int bookId = b.getBookId();
+					
+					bookRepository.deleteBook(bookId);
+				}
+			}
+		}
+		
+		return deleted;
 	}
 
 }
