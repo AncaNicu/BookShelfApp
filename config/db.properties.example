@@ -1,0 +1,1 @@
+db.url=jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=BookShelfDb;encrypt=true;trustServerCertificate=true;integratedSecurity=true
