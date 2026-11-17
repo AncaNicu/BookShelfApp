@@ -43,7 +43,7 @@ public class JdbcAuthorRepository implements IAuthorRepository
 			{		
 				if(generatedKeys.next())
 				{	
-					int generatedId = generatedKeys.getInt("AuthorId");
+					int generatedId = generatedKeys.getInt(1);
 					
 					author.setAuthorId(generatedId);
 				}
@@ -99,7 +99,7 @@ public class JdbcAuthorRepository implements IAuthorRepository
 			statement.setString(1,  author.getFirstName());
 			statement.setString(2,  author.getLastName());
 			statement.setString(3,  author.getNationality());
-			statement.setInt(4,  author.getAuthorId());
+			statement.setInt(4,  excludedAuthorId);
 			
 			try(ResultSet result = statement.executeQuery())
 			{

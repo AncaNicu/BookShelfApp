@@ -33,7 +33,15 @@ public class JdbcBookRepository implements IBookRepository {
 			statement.setString(4, book.getStatus().toString());
 			statement.setInt(5, book.getAuthorId());
 			statement.setInt(6, book.getGenreId());
-			statement.setInt(7, book.getRating());
+			
+			if (book.getRating() == null)
+			{
+			    statement.setNull(7, java.sql.Types.INTEGER);
+			}
+			else
+			{
+			    statement.setInt(7, book.getRating());
+			}
 			
 			int affectedRows = statement.executeUpdate();
 			
@@ -141,18 +149,9 @@ public class JdbcBookRepository implements IBookRepository {
 					String status = result.getString("Status");
 					int authorId = result.getInt("AuthorId");
 					int genreId = result.getInt("GenreId");
-					int rating = result.getInt("Rating");
+					Integer rating = result.getObject("Rating", Integer.class);
 					
-					ReadingStatus rStatus;
-					
-					try
-					{
-						rStatus = ReadingStatus.valueOf(status);
-					}
-					catch(IllegalArgumentException e)
-					{
-						rStatus = null;
-					}
+					ReadingStatus rStatus = ReadingStatus.valueOf(status);
 					
 					Book book = new Book(title, publicationYear, totalPages,
 							rStatus, authorId, genreId, rating);
@@ -193,18 +192,9 @@ public class JdbcBookRepository implements IBookRepository {
 				String status = resultSet.getString("Status");
 				int authorId = resultSet.getInt("AuthorId");
 				int genreId = resultSet.getInt("GenreId");
-				int rating = resultSet.getInt("Rating");
+				Integer rating = resultSet.getObject("Rating", Integer.class);
 				
-				ReadingStatus rStatus;
-				
-				try
-				{
-					rStatus = ReadingStatus.valueOf(status);
-				}
-				catch(IllegalArgumentException e)
-				{
-					rStatus = null;
-				}
+				ReadingStatus rStatus = ReadingStatus.valueOf(status);
 				
 				Book book = new Book(title, publicationYear, totalPages,
 						rStatus, authorId, genreId, rating);
@@ -224,7 +214,7 @@ public class JdbcBookRepository implements IBookRepository {
 	@Override
 	public boolean updateBook(int bookId, Book updatedBook) 
 	{
-		String sql = "UPDATTE Books SET Title = ?, PublicationYear = ?, TotalPages = ?, " +
+		String sql = "UPDATE Books SET Title = ?, PublicationYear = ?, TotalPages = ?, " +
 				"Status = ?, AuthorId = ?, GenreId = ?, Rating = ? WHERE BookId = ?;";
 		
 		try(Connection connection = DatabaseConnection.getConnection();
@@ -236,7 +226,17 @@ public class JdbcBookRepository implements IBookRepository {
 			statement.setString(4, updatedBook.getStatus().toString());
 			statement.setInt(5, updatedBook.getAuthorId());
 			statement.setInt(6, updatedBook.getGenreId());
-			statement.setInt(7, updatedBook.getRating());
+			
+			if (updatedBook.getRating() == null)
+			{
+			    statement.setNull(7, java.sql.Types.INTEGER);
+			}
+			else
+			{
+			    statement.setInt(7, updatedBook.getRating());
+			}
+			
+			statement.setInt(8, bookId);
 			
 			int affectedRows = statement.executeUpdate();
 			

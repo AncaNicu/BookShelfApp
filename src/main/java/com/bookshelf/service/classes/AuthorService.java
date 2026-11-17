@@ -83,23 +83,25 @@ public class AuthorService implements IAuthorService
 	@Override
 	public boolean deleteAuthor(int authorId) 
 	{
+		//check if the author exists
+	    if (authorRepository.findAuthorById(authorId).isEmpty())
+	    {
+	        return false;
+	    }
+	    
+		//delete all books with the author to be deleted
 		List<Book> books = bookRepository.getAllBooks();
-		boolean deleted = authorRepository.deleteAuthor(authorId);
-		
-		if(deleted)
+		for(Book b : books)
 		{
-			for(Book b : books)
+			if(b.getAuthorId() == authorId)
 			{
-				if(b.getAuthorId() == authorId)
-				{
-					int bookId = b.getBookId();
-					
-					bookRepository.deleteBook(bookId);
-				}
+				int bookId = b.getBookId();
+				
+				bookRepository.deleteBook(bookId);
 			}
 		}
-		
-		return deleted;
+
+		return authorRepository.deleteAuthor(authorId);
 	}
 
 }

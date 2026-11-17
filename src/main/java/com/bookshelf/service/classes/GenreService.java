@@ -78,24 +78,24 @@ public class GenreService implements IGenreService
 
 	@Override
 	public boolean deleteGenre(int genreId) 
-	{		
+	{	
+	    if (genreRepository.findGenreById(genreId).isEmpty())
+	    {
+	        return false;
+	    }
+	    
 		List<Book> books = bookRepository.getAllBooks();
-		boolean deleted = genreRepository.deleteGenre(genreId);
-		
-		if(deleted)
+		for(Book b : books)
 		{
-			for(Book b : books)
+			if(b.getGenreId() == genreId)
 			{
-				if(b.getGenreId() == genreId)
-				{
-					int bookId = b.getBookId();
-					
-					bookRepository.deleteBook(bookId);
-				}
+				int bookId = b.getBookId();
+				
+				bookRepository.deleteBook(bookId);
 			}
 		}
-		
-		return deleted;
+
+		return genreRepository.deleteGenre(genreId);
 	}
 
 }
