@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,11 +23,10 @@ public class JdbcAuthorRepository implements IAuthorRepository
 		String sql = "INSERT INTO Authors (FirstName, LastName, Nationality)\r\n"
 				+ "VALUES (?, ?, ?);";
 		
-		try (Connection connection = DatabaseConnection.getConnection())
-		{
+		try (Connection connection = DatabaseConnection.getConnection();
 			PreparedStatement statement = connection.
-					prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-			
+						prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
+		{
 			statement.setString(1, author.getFirstName());
 			statement.setString(2, author.getLastName());
 			statement.setString(3, author.getNationality());
@@ -39,7 +39,7 @@ public class JdbcAuthorRepository implements IAuthorRepository
                         "Adding author did not insert exactly one row.", null);
 			}
 			
-			try (ResultSet generatedKeys = statement.getGeneratedKeys())
+			try(ResultSet generatedKeys = statement.getGeneratedKeys())
 			{		
 				if(generatedKeys.next())
 				{	
@@ -54,8 +54,7 @@ public class JdbcAuthorRepository implements IAuthorRepository
                             null);
 				}
 			}
-			
-			
+						
 			return author;
 		}
 		catch (SQLException e)
@@ -67,43 +66,183 @@ public class JdbcAuthorRepository implements IAuthorRepository
 	@Override
 	public boolean existsDuplicate(Author author) 
 	{
-		// TODO Auto-generated method stub
-		return false;
+		String sql = "SELECT 1 FROM Authors WHERE FirstName = ? " +
+				"AND LastName = ? AND Nationality = ?;";
+		
+		try(Connection connection = DatabaseConnection.getConnection();
+			PreparedStatement statement = connection.prepareStatement(sql))
+		{
+			statement.setString(1,  author.getFirstName());
+			statement.setString(2,  author.getLastName());
+			statement.setString(3,  author.getNationality());
+			
+			try(ResultSet result = statement.executeQuery())
+			{
+				return result.next();
+			}
+		}
+		catch (SQLException e)
+		{
+			throw new DataAccessException("Could not check if the author already exists.", e);
+		}
 	}
 
 	@Override
 	public boolean existsDuplicate(Author author, int excludedAuthorId) 
 	{
-		// TODO Auto-generated method stub
-		return false;
+		String sql = "SELECT 1 FROM Authors WHERE FirstName = ? " +
+				"AND LastName = ? AND Nationality = ? AND AuthorId <> ?;";
+		
+		try(Connection connection = DatabaseConnection.getConnection();
+			PreparedStatement statement = connection.prepareStatement(sql))
+		{
+			statement.setString(1,  author.getFirstName());
+			statement.setString(2,  author.getLastName());
+			statement.setString(3,  author.getNationality());
+			statement.setInt(4,  author.getAuthorId());
+			
+			try(ResultSet result = statement.executeQuery())
+			{
+				return result.next();
+			}
+		}
+		catch (SQLException e)
+		{
+			throw new DataAccessException("Could not check if the author already exists.", e);
+		}
 	}
 
 	@Override
 	public Optional<Author> findAuthorById(int authorId) 
 	{
-		// TODO Auto-generated method stub
-		return Optional.empty();
+		String sql = "SELECT AuthorId, FirstName, LastName, Nationality " +
+				"FROM Authors WHERE AuthorId = ?;";
+		
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement statement = connection.prepareStatement(sql))
+		{
+			statement.setInt(1, authorId);
+			
+			try(ResultSet result = statement.executeQuery())
+			{
+				if(result.next())
+				{
+					int id = result.getInt("AuthorId");
+					String firstName = result.getString("FirstName");
+					String lastName = result.getString("LastName");
+					String nationality = result.getString("Nationality");
+					
+					Author author = new Author(firstName, lastName, nationality);
+					author.setAuthorId(id);
+					
+					return Optional.of(author);
+				}
+				else
+				{
+					return Optional.empty();
+				}
+			}
+		}
+		catch (SQLException e) 
+		{
+			throw new DataAccessException("Could not find an author by its id.", e);
+		}
 	}
 
 	@Override
 	public List<Author> getAllAuthors() 
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Author> authors = new ArrayList<>();
+		
+		String sql = "SELECT AuthorId, FirstName, LastName, Nationality " +
+				"FROM Authors;";
+		
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement statement = connection.prepareStatement(sql);
+				ResultSet resultSet = statement.executeQuery())
+		{
+			while(resultSet.next())
+			{
+				int id = resultSet.getInt("AuthorId");
+				String firstName = resultSet.getString("FirstName");
+				String lastName = resultSet.getString("LastName");
+				String nationality = resultSet.getString("Nationality");
+				
+				Author author = new Author(firstName, lastName, nationality);
+				author.setAuthorId(id);
+				
+				authors.add(author);
+			}
+			
+			return authors;
+		}
+		catch (SQLException e) 
+		{
+			throw new DataAccessException("Could not get all authors.", e);
+		}
 	}
 
 	@Override
 	public boolean updateAuthor(int authorId, Author updatedAuthor) 
 	{
-		// TODO Auto-generated method stub
-		return false;
+		String sql = "UPDATE Authors SET FirstName = ?, LastName = ?, " +
+				"Nationality = ? WHERE AuthorId = ?;";
+		
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement statement = connection.prepareStatement(sql))
+		{
+			statement.setString(1, updatedAuthor.getFirstName());
+			statement.setString(2, updatedAuthor.getLastName());
+			statement.setString(3, updatedAuthor.getNationality());
+			statement.setInt(4, authorId);
+			
+			int affectedRows = statement.executeUpdate();
+			
+			if(affectedRows == 0)
+			{
+				return false;
+			}
+			if(affectedRows == 1)
+			{
+				return true;
+			}
+			
+			throw new DataAccessException(
+                    "Updating author did not change exactly one row.", null);
+		}
+		catch (SQLException e) 
+		{
+			throw new DataAccessException("Could not update author.", e);
+		}
 	}
 
 	@Override
 	public boolean deleteAuthor(int authorId) 
 	{
-		// TODO Auto-generated method stub
-		return false;
+		String sql = "DELETE FROM Authors WHERE AuthorId = ?;";
+		
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement statement = connection.prepareStatement(sql))
+		{
+			statement.setInt(1,  authorId);
+			
+			int affectedRows = statement.executeUpdate();
+			
+			if(affectedRows == 0)
+			{
+				return false;
+			}
+			if(affectedRows == 1)
+			{
+				return true;
+			}
+			throw new DataAccessException(
+                    "Deleting author did not delete exactly one row.", null);
+		}
+		catch (SQLException e) 
+		{
+			throw new DataAccessException("Could not delete author.", e);
+		}
 	}
 
 }
