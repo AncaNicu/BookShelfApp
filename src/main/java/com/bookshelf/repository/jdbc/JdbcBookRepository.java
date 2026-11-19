@@ -7,9 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-import com.bookshelf.database.DatabaseConnection;
+import com.bookshelf.database.JdbcConnectionScope;
 import com.bookshelf.enums.ReadingStatus;
 import com.bookshelf.exception.DataAccessException;
 import com.bookshelf.model.Book;
@@ -17,14 +18,29 @@ import com.bookshelf.repository.interfaces.IBookRepository;
 
 public class JdbcBookRepository implements IBookRepository {
 
+	private final Connection sharedConnection;
+	
+	//constructor for a repo that manages its own conn
+	public JdbcBookRepository()
+	{
+		this.sharedConnection = null;
+	}
+	
+	//constructor for a repo that uses a shared conn
+	//used by Unit of Work
+	public JdbcBookRepository(Connection sharedConnection)
+	{
+		this.sharedConnection = Objects.requireNonNull(sharedConnection);
+	}
+	
 	@Override
 	public Book addBook(Book book) 
 	{
 		String sql = "INSERT INTO Books (Title, PublicationYear, TotalPages, " +
 			"Status, AuthorId, GenreId, Rating) VALUES (?, ?, ?, ?, ?, ?, ?);";
 		
-		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.
+		try(JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
 						prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
 		{
 			statement.setString(1, book.getTitle());
@@ -80,8 +96,9 @@ public class JdbcBookRepository implements IBookRepository {
 		String sql = "SELECT 1 FROM Books WHERE Title = ? AND PublicationYear = ? " +
 				"AND TotalPages = ? AND AuthorId = ? AND GenreId = ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setString(1, book.getTitle());
 			statement.setInt(2, book.getPublicationYear());
@@ -106,8 +123,9 @@ public class JdbcBookRepository implements IBookRepository {
 		String sql = "SELECT 1 FROM Books WHERE Title = ? AND PublicationYear = ? " +
 				"AND TotalPages = ? AND AuthorId = ? AND GenreId = ? AND BookId <> ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setString(1, book.getTitle());
 			statement.setInt(2, book.getPublicationYear());
@@ -133,8 +151,9 @@ public class JdbcBookRepository implements IBookRepository {
 		String sql = "SELECT BookId, Title, PublicationYear, TotalPages, " +
 				"Status, AuthorId, GenreId, Rating FROM Books WHERE BookId = ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setInt(1,  bookId);
 			
@@ -179,8 +198,9 @@ public class JdbcBookRepository implements IBookRepository {
 		String sql = "SELECT BookId, Title, PublicationYear, TotalPages, " +
 				"Status, AuthorId, GenreId, Rating FROM Books;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql);
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql);
 				ResultSet resultSet = statement.executeQuery())
 		{
 			while(resultSet.next())
@@ -217,8 +237,9 @@ public class JdbcBookRepository implements IBookRepository {
 		String sql = "UPDATE Books SET Title = ?, PublicationYear = ?, TotalPages = ?, " +
 				"Status = ?, AuthorId = ?, GenreId = ?, Rating = ? WHERE BookId = ?;";
 		
-		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setString(1, updatedBook.getTitle());
 			statement.setInt(2, updatedBook.getPublicationYear());
@@ -263,8 +284,9 @@ public class JdbcBookRepository implements IBookRepository {
 	{
 		String sql = "DELETE FROM Books WHERE BookId = ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setInt(1, bookId);
 			

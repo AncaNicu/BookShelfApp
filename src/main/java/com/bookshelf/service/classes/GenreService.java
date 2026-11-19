@@ -7,25 +7,19 @@ import java.util.Optional;
 import com.bookshelf.exception.DuplicateGenreException;
 import com.bookshelf.model.Book;
 import com.bookshelf.model.Genre;
-import com.bookshelf.repository.interfaces.IBookRepository;
-import com.bookshelf.repository.interfaces.IGenreRepository;
 import com.bookshelf.service.interfaces.IGenreService;
+import com.bookshelf.unitofwork.interfaces.IUnitOfWork;
+import com.bookshelf.unitofwork.interfaces.IUnitOfWorkFactory;
 
 public class GenreService implements IGenreService 
-{
-	private final IGenreRepository genreRepository;
-	private final IBookRepository bookRepository;
+{	
+	private final IUnitOfWorkFactory unitOfWorkFactory;
 	
-	public GenreService(IGenreRepository genreRepository,
-			IBookRepository bookRepository)
+	public GenreService(IUnitOfWorkFactory unitOfWorkFactory)
 	{
-		this.genreRepository = Objects.requireNonNull(
-				genreRepository,
-				"Genre repository cannot be null.");
-		
-		this.bookRepository = Objects.requireNonNull(
-				bookRepository,
-				"Book repository cannot be null.");
+		this.unitOfWorkFactory = Objects.requireNonNull(
+				unitOfWorkFactory,
+				"Unit of Work Factory cannot be null.");
 	}
 
 	@Override
@@ -37,25 +31,38 @@ public class GenreService implements IGenreService
 			("The genre to be added cannot be null.");
 		}
 		
-		if(genreRepository.existsDuplicate(genre))
+		try(IUnitOfWork unitOfWork = unitOfWorkFactory.create())
 		{
-			throw new DuplicateGenreException
-			("The genre already exists.");
+			if(unitOfWork.genres().existsDuplicate(genre))
+			{
+				throw new DuplicateGenreException
+				("The genre already exists.");
+			}
+			
+			Genre addedGenre = unitOfWork.genres().addGenre(genre);
+			
+			unitOfWork.commit();
+			
+			return addedGenre;
 		}
-		
-		return genreRepository.addGenre(genre);
 	}
 
 	@Override
 	public Optional<Genre> findGenreById(int genreId) 
 	{
-		return genreRepository.findGenreById(genreId);
+		try(IUnitOfWork unitOfWork = unitOfWorkFactory.create())
+		{
+			return unitOfWork.genres().findGenreById(genreId);
+		}
 	}
 
 	@Override
 	public List<Genre> getAllGenres() 
 	{
-		return genreRepository.getAllGenres();
+		try(IUnitOfWork unitOfWork = unitOfWorkFactory.create())
+		{
+			return unitOfWork.genres().getAllGenres();
+		}
 	}
 
 	@Override
@@ -67,35 +74,64 @@ public class GenreService implements IGenreService
 			("The genre to be updated cannot be null.");
 		}
 		
-		if(genreRepository.existsDuplicate(updatedGenre, genreId))
+		try(IUnitOfWork unitOfWork = unitOfWorkFactory.create())
 		{
-			throw new DuplicateGenreException
-			("The genre with the updated data already exists.");
+			if(unitOfWork.genres().existsDuplicate(updatedGenre, genreId))
+			{
+				throw new DuplicateGenreException
+				("The genre with the updated data already exists.");
+			}
+			
+			boolean updated = unitOfWork.genres().updateGenre(genreId, updatedGenre);
+			
+			if(updated)
+			{
+				unitOfWork.commit();
+			}
+			
+			return updated;
 		}
-		
-		return genreRepository.updateGenre(genreId, updatedGenre);
 	}
 
 	@Override
 	public boolean deleteGenre(int genreId) 
 	{	
-	    if (genreRepository.findGenreById(genreId).isEmpty())
+	    try(IUnitOfWork unitOfWork = unitOfWorkFactory.create())
 	    {
-	        return false;
-	    }
-	    
-		List<Book> books = bookRepository.getAllBooks();
-		for(Book b : books)
-		{
-			if(b.getGenreId() == genreId)
+	    	if(unitOfWork.genres().findGenreById(genreId).isEmpty())
+	    	{
+	    		return false;
+	    	}
+	    	
+	    	List<Book> books = unitOfWork.books().getAllBooks();
+	    	
+	    	for(Book b : books)
+	    	{
+	    		if(b.getGenreId() == genreId)
+	    		{
+	    			boolean deleted = unitOfWork.books().deleteBook(
+	    					b.getBookId());
+	    			
+					if(!deleted)
+					{
+	                    throw new IllegalStateException(
+	                            "Could not delete a book belonging to the genre.");
+					}
+	    		}
+	    	}
+	    	
+	    	boolean deleted = unitOfWork.genres().deleteGenre(genreId);
+	    	
+			if(!deleted)
 			{
-				int bookId = b.getBookId();
-				
-				bookRepository.deleteBook(bookId);
+                throw new IllegalStateException(
+                        "Could not delete the genre.");
 			}
-		}
-
-		return genreRepository.deleteGenre(genreId);
+			
+			unitOfWork.commit();
+			
+			return true;
+	    }
 	}
 
 }

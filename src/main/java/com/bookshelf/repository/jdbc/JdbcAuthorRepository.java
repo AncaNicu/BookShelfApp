@@ -7,24 +7,39 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-import com.bookshelf.database.DatabaseConnection;
+import com.bookshelf.database.JdbcConnectionScope;
 import com.bookshelf.exception.DataAccessException;
 import com.bookshelf.model.Author;
 import com.bookshelf.repository.interfaces.IAuthorRepository;
 
 public class JdbcAuthorRepository implements IAuthorRepository 
 {
-
+	private final Connection sharedConnection;
+	
+	//constructor for a repo that manages its own conn
+	public JdbcAuthorRepository()
+	{
+		this.sharedConnection = null;
+	}
+	
+	//constructor for a repo that uses a shared conn
+	//used by Unit of Work
+	public JdbcAuthorRepository(Connection sharedConnection)
+	{
+		this.sharedConnection = Objects.requireNonNull(sharedConnection);
+	}
+	
 	@Override
 	public Author addAuthor(Author author) 
 	{
 		String sql = "INSERT INTO Authors (FirstName, LastName, Nationality)\r\n"
 				+ "VALUES (?, ?, ?);";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.
+		try(JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
 						prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
 		{
 			statement.setString(1, author.getFirstName());
@@ -69,8 +84,9 @@ public class JdbcAuthorRepository implements IAuthorRepository
 		String sql = "SELECT 1 FROM Authors WHERE FirstName = ? " +
 				"AND LastName = ? AND Nationality = ?;";
 		
-		try(Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setString(1,  author.getFirstName());
 			statement.setString(2,  author.getLastName());
@@ -93,8 +109,9 @@ public class JdbcAuthorRepository implements IAuthorRepository
 		String sql = "SELECT 1 FROM Authors WHERE FirstName = ? " +
 				"AND LastName = ? AND Nationality = ? AND AuthorId <> ?;";
 		
-		try(Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setString(1,  author.getFirstName());
 			statement.setString(2,  author.getLastName());
@@ -118,8 +135,9 @@ public class JdbcAuthorRepository implements IAuthorRepository
 		String sql = "SELECT AuthorId, FirstName, LastName, Nationality " +
 				"FROM Authors WHERE AuthorId = ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setInt(1, authorId);
 			
@@ -157,8 +175,9 @@ public class JdbcAuthorRepository implements IAuthorRepository
 		String sql = "SELECT AuthorId, FirstName, LastName, Nationality " +
 				"FROM Authors;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql);
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql);
 				ResultSet resultSet = statement.executeQuery())
 		{
 			while(resultSet.next())
@@ -188,8 +207,9 @@ public class JdbcAuthorRepository implements IAuthorRepository
 		String sql = "UPDATE Authors SET FirstName = ?, LastName = ?, " +
 				"Nationality = ? WHERE AuthorId = ?;";
 		
-		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setString(1, updatedAuthor.getFirstName());
 			statement.setString(2, updatedAuthor.getLastName());
@@ -221,8 +241,9 @@ public class JdbcAuthorRepository implements IAuthorRepository
 	{
 		String sql = "DELETE FROM Authors WHERE AuthorId = ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setInt(1,  authorId);
 			

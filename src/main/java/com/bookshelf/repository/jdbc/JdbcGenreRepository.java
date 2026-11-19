@@ -9,21 +9,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.bookshelf.database.DatabaseConnection;
+import java.util.Objects;
+
+import com.bookshelf.database.JdbcConnectionScope;
 import com.bookshelf.exception.DataAccessException;
 import com.bookshelf.model.Genre;
 import com.bookshelf.repository.interfaces.IGenreRepository;
 
 public class JdbcGenreRepository implements IGenreRepository 
 {
-
+	private final Connection sharedConnection;
+	
+	//constructor for a repo that manages its own conn
+	public JdbcGenreRepository()
+	{
+		this.sharedConnection = null;
+	}
+	
+	//constructor for a repo that uses a shared conn
+	//used by Unit of Work
+	public JdbcGenreRepository(Connection sharedConnection)
+	{
+		this.sharedConnection = Objects.requireNonNull(sharedConnection);
+	}
+	
 	@Override
 	public Genre addGenre(Genre genre) 
 	{
 		String sql = "INSERT INTO Genres (Name) VALUES (?);";
 		
-		try(Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.
+		try(JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+			PreparedStatement statement = scope.getConnection().
 					prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
 		{
 			
@@ -66,8 +82,9 @@ public class JdbcGenreRepository implements IGenreRepository
 	{
 		String sql = "SELECT 1 FROM Genres WHERE Name = ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+			PreparedStatement statement = scope.getConnection().
+					prepareStatement(sql))
 		{	
 			statement.setString(1, genre.getName());
 			
@@ -87,8 +104,9 @@ public class JdbcGenreRepository implements IGenreRepository
 	{
 		String sql = "SELECT 1 FROM Genres WHERE Name = ? AND GenreId <> ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setString(1, genre.getName());
 			statement.setInt(2, excludedGenreId);
@@ -109,8 +127,9 @@ public class JdbcGenreRepository implements IGenreRepository
 	{
 		String sql = "SELECT GenreId, Name FROM Genres WHERE GenreId = ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{			
 			statement.setInt(1, genreId);
 			
@@ -145,9 +164,10 @@ public class JdbcGenreRepository implements IGenreRepository
 		
 		String sql = "SELECT GenreId, Name FROM Genres;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql);
-			ResultSet resultSet = statement.executeQuery())
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql);
+				ResultSet resultSet = statement.executeQuery())
 		{
 			while(resultSet.next())
 			{
@@ -173,8 +193,9 @@ public class JdbcGenreRepository implements IGenreRepository
 	{
 		String sql = "UPDATE Genres SET Name = ? WHERE GenreId = ?;";
 		
-		try(Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setString(1, updatedGenre.getName());
 			statement.setInt(2, genreId);
@@ -204,8 +225,9 @@ public class JdbcGenreRepository implements IGenreRepository
 	{
 		String sql = "DELETE FROM Genres WHERE GenreId = ?;";
 		
-		try (Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql))
+		try (JdbcConnectionScope scope = new JdbcConnectionScope(sharedConnection);
+				PreparedStatement statement = scope.getConnection().
+						prepareStatement(sql))
 		{
 			statement.setInt(1, genreId);
 			
